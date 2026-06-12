@@ -1,0 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using _KMH_Framework;
+
+#ROOTNAMESPACEBEGIN#
+public class #SCRIPTNAME# : MonoSingleton<#SCRIPTNAME#>
+{
+}
+#ROOTNAMESPACEEND#
