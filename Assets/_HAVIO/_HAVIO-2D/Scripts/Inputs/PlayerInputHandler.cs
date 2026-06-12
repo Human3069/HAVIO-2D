@@ -5,8 +5,6 @@ namespace HAVIO
 {
     public class PlayerInputHandler : MonoSingleton<PlayerInputHandler>
     {
-        [ReadOnly]
-        [SerializeField]
         private float _pitch;
         public float Pitch
         {
@@ -20,8 +18,6 @@ namespace HAVIO
             }
         }
 
-        [ReadOnly]
-        [SerializeField]
         private float _throttle;
         public float Throttle
         {
