@@ -6,7 +6,6 @@ namespace HAVIO
 {
     public class EnemyStateMachine
     {
-        private EnemyContext _context;
         private EnemyData _data;
         
         private IEnemyState currentState;
@@ -15,9 +14,8 @@ namespace HAVIO
         public delegate void StateChangedDelegate(IEnemyState oldState, IEnemyState newState);
         public event StateChangedDelegate OnStateChangedEvent;
         
-        public EnemyStateMachine(EnemyContext context, EnemyData data)
+        public EnemyStateMachine(EnemyData data)
         {
-            this._context = context;
             this._data = data;
         }
 
@@ -45,7 +43,7 @@ namespace HAVIO
 
             currentState?.Exit();
             currentState = newState;
-            currentState?.Enter(_context, _data);
+            currentState?.Enter(_data);
             
             source?.Cancel();
             source = new CancellationTokenSource();

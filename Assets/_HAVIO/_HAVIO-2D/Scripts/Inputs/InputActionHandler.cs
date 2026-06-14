@@ -27,8 +27,12 @@ namespace HAVIO
         public float ThrottleInput;
         [NonSerialized]
         public bool IsFiringMain;
+        public Action OnInputFireMain;
+
         [NonSerialized]
         public bool IsFiringSub;
+        public Action OnInputFireSub;
+
         public Action OnInputReload;
 
         private void Awake()
@@ -61,7 +65,17 @@ namespace HAVIO
             ThrottleInput = throttleAction.action.ReadValue<float>();
 
             IsFiringMain = fireMainWeaponAction.action.IsPressed();
+            if (fireMainWeaponAction.action.WasPressedThisFrame() == true)
+            {
+                OnInputFireMain?.Invoke();
+            }
+
             IsFiringSub = fireSubWeaponAction.action.IsPressed();
+            if (fireSubWeaponAction.action.WasPressedThisFrame() == true)
+            {
+                OnInputFireSub?.Invoke();
+            }
+
             if (reloadAction.action.WasPressedThisFrame() == true)
             {
                 OnInputReload?.Invoke();

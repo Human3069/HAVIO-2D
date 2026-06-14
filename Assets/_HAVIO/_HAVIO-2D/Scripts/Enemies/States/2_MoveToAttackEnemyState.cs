@@ -1,13 +1,13 @@
+using UnityEngine;
+
 namespace HAVIO
 {
     public class MoveToAttackEnemyState : IEnemyState
     {
-        private EnemyContext _context;
         private EnemyData _data;
-        
-        public void Enter(EnemyContext context, EnemyData data)
+
+        public void Enter(EnemyData data)
         {
-            this._context = context;
             this._data = data;
         }
         
@@ -23,8 +23,14 @@ namespace HAVIO
 
         public void SlowTick()
         {
-            _context.DecideStateByDistance(_data);
-            _context.HandleFlip(_data);
+            _data.DecideStateByDistance();
+            _data.HandleFlip();
+
+            Vector3 targetPosition = _data.Section.GetNearestFromPlayer();
+            if (_data.IsInRange(targetPosition, 0.1f) == false)
+            {
+                _data.Enemy.Move(targetPosition);
+            }
         }
     }
 }

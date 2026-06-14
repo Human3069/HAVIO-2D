@@ -6,9 +6,9 @@ namespace HAVIO
     {
         private Animator _animator;
         
-        public EnemyAnimationController(Animator animator)
+        public EnemyAnimationController(Enemy enemy)
         {
-            this._animator = animator;
+            this._animator = enemy.GetComponent<Animator>();
         }
         
         public void PlayMove(bool isMoving)

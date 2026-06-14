@@ -66,6 +66,7 @@ namespace HAVIO
 
         private void Awake()
         {
+            InputActionHandler.Instance.OnInputFireMain += OnInputFireMainKey;
             InputActionHandler.Instance.OnInputReload += OnInputReloadKey;
 
             animator = targetTransform.GetComponent<Animator>();
@@ -79,6 +80,7 @@ namespace HAVIO
         {
             if (InputActionHandler.HasInstance == true)
             {
+                InputActionHandler.Instance.OnInputFireMain -= OnInputFireMainKey;
                 InputActionHandler.Instance.OnInputReload -= OnInputReloadKey;
             }
         }
@@ -87,8 +89,6 @@ namespace HAVIO
         {
             RotateTurretDirection();
             ClampTurretDirection();
-
-            HandleFiring();
         }
 
         private void RotateTurretDirection()
@@ -121,14 +121,52 @@ namespace HAVIO
             targetTransform.localEulerAngles = new Vector3(0f, 0f, currentAngle);
         }
 
-        private void HandleFiring()
+        private void OnInputFireMainKey()
         {
-            if (InputActionHandler.Instance.IsFiringMain == true &&
-                isFirable == true &&
+            if (isFirable == true &&
                 isReloading == false)
             {
                 FireMainAsync().Forget();
             }
+        }
+
+        private async UniTaskVoid FireMainAsync()
+        {
+            while (InputActionHandler.Instance.IsFiringMain == true &&
+                   isReloading == false)
+            {
+                isFirable = false;
+                FireMainOneShotAsync().Forget();
+
+                await UniTask.WaitForSeconds(fireRate);
+                isFirable = true;
+            }
+        }
+
+        private async UniTaskVoid FireMainOneShotAsync()
+        {
+            int frameCount = 2;
+            for (int i = 0; i < frameCount; i++)
+            {
+                int firingIndex = Random.Range(0, 3);
+                animator.SetTrigger("Fire_" + firingIndex);
+
+                if (i != frameCount - 1)
+                {
+                    await UniTask.Yield();
+                }
+            }
+
+            float angle = targetTransform.eulerAngles.z + Random.Range(-spreadAngle / 2f, spreadAngle / 2f);
+            Quaternion spreadedRotation = Quaternion.Euler(0f, 0f, angle);
+
+            PoolType type = projectileRateList[firedIndex];
+            PoolType shellType = type.GetShellType();
+            type.EnablePool<Projectile>(x => x.OnBeforeEnablePool(targetTransform.position, spreadedRotation));
+            shellType.EnablePool<Shell>(x => x.OnBeforeEnablePool(targetTransform.position, targetTransform.rotation));
+
+            firedIndex = (firedIndex + 1) % projectileRateList.Count;
+            CurrentAmmo = Mathf.Clamp(CurrentAmmo - 1, 0, totalAmmo);
         }
 
         private void OnInputReloadKey()
@@ -161,45 +199,6 @@ namespace HAVIO
             {
                 FireMainAsync().Forget();
             }
-        }
-
-        private async UniTaskVoid FireMainAsync()
-        {
-            while (InputActionHandler.Instance.IsFiringMain == true &&
-                   isReloading == false)
-            {
-                isFirable = false;
-                FireOneShotAsync().Forget();
-
-                await UniTask.WaitForSeconds(fireRate);
-                isFirable = true;
-            }
-        }
-
-        private async UniTaskVoid FireOneShotAsync()
-        {
-            int frameCount = 2;
-            for (int i = 0; i < frameCount; i++)
-            {
-                int firingIndex = Random.Range(0, 3);
-                animator.SetTrigger("Fire_" + firingIndex);
-
-                if (i != frameCount - 1)
-                {
-                    await UniTask.Yield();
-                }
-            }
-
-            float angle = targetTransform.eulerAngles.z + Random.Range(-spreadAngle / 2f, spreadAngle / 2f);
-            Quaternion spreadedRotation = Quaternion.Euler(0f, 0f, angle);
-
-            PoolType type = projectileRateList[firedIndex];
-            PoolType shellType = type.GetShellType();
-            type.EnablePool<Projectile>(x => x.OnBeforeEnablePool(targetTransform.position, spreadedRotation));
-            shellType.EnablePool<Shell>(x => x.OnBeforeEnablePool(targetTransform.position, targetTransform.rotation));
-
-            firedIndex = (firedIndex + 1) % projectileRateList.Count;
-            CurrentAmmo = Mathf.Clamp(CurrentAmmo - 1, 0, totalAmmo);
         }
 
         private void OnGUI()

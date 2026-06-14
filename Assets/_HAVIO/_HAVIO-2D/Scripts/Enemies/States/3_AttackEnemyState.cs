@@ -1,16 +1,14 @@
 namespace HAVIO
 {
-    public class PatrolEnemyState : IEnemyState
+    public class AttackEnemyState : IEnemyState
     {
-        private EnemyContext _context;
         private EnemyData _data;
-        
-        public void Enter(EnemyContext context, EnemyData data)
+
+        public void Enter(EnemyData data)
         {
-            this._context = context;
             this._data = data;
         }
-        
+
         public void Exit()
         {
             // 상태 종료 처리
@@ -18,12 +16,13 @@ namespace HAVIO
 
         public void Tick()
         {
-
+            _data.LookAtAll();
         }
 
         public void SlowTick()
         {
-            _context.DecideStateByDistance(_data);
+            _data.DecideStateByDistance();
+            _data.HandleFlip();
         }
     }
 }

@@ -4,12 +4,10 @@ namespace HAVIO
 {
     public class IdleEnemyState : IEnemyState
     {
-        private EnemyContext _context;
         private EnemyData _data;
         
-        public void Enter(EnemyContext context, EnemyData data)
+        public void Enter(EnemyData data)
         {
-            this._context = context;
             this._data = data;
         }
         
@@ -25,7 +23,7 @@ namespace HAVIO
         
         public void SlowTick()
         {
-            _context.DecideStateByDistance(_data);
+            _data.DecideStateByDistance();
         }
     }
 }
