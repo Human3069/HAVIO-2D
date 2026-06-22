@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,14 +8,16 @@ namespace HAVIO
     {
         [SerializeField]
         private List<BoxCollider2D> colliderList;
+        [SerializeField]
+        private float offset = 0.5f;
 
-        private Vector3 leftPoint;
-        private Vector3 rightPoint;
+        private bool isInitialized = false;
+        private TilemapSectionLine line;
 
         private void Awake()
         {
             SortListByPositionX();
-            EvaluatePoints();
+            EvaluateLine();
         }
 
         private void SortListByPositionX()
@@ -29,7 +32,7 @@ namespace HAVIO
             }
         }
 
-        private void EvaluatePoints()
+        private void EvaluateLine()
         {
             if (colliderList == null ||
                 colliderList.Count == 0)
@@ -40,30 +43,33 @@ namespace HAVIO
 
             BoxCollider2D firstCollider = colliderList[0];
             BoxCollider2D lastCollider = colliderList[colliderList.Count - 1];
+
             Bounds firstBounds = firstCollider.bounds;
             Bounds lastBounds = lastCollider.bounds;
-            this.leftPoint = new Vector2(firstBounds.min.x, firstBounds.max.y);
-            this.rightPoint = new Vector2(lastBounds.max.x, lastBounds.max.y);
+
+            Vector3 leftPoint = new Vector2(firstBounds.min.x, firstBounds.max.y);
+            Vector3 rightPoint = new Vector2(lastBounds.max.x, lastBounds.max.y);
+
+            line = new TilemapSectionLine(leftPoint, rightPoint, offset);
+            isInitialized = true;
         }
 
-        public Vector3 GetNearestFromPlayer()
+        public Vector3 GetClosestFromPlayer()
         {
             Vector3 fromPosition = HelicopterController.Instance.transform.position;
-            Vector3 lineDirection = rightPoint - leftPoint;
-            Vector3 toPosition = fromPosition - leftPoint;
+            Vector3 lineDirection = line.Direction;
+            Vector3 toPosition = fromPosition - line.Left;
 
             float normal = Vector3.Dot(toPosition, lineDirection) / lineDirection.sqrMagnitude;
             normal = Mathf.Clamp01(normal);
 
-            return leftPoint + normal * lineDirection;
+            return line.Left + normal * lineDirection;
         }
 
-        public (Vector3, Vector3) GetSectionPoints(float offset)
+        public async UniTask<TilemapSectionLine> GetLineAsync()
         {
-            Vector3 appliedLeftPoint = leftPoint + Vector3.right * offset;
-            Vector3 appliedRightPoint = rightPoint + Vector3.left * offset;
-
-            return (appliedLeftPoint, appliedRightPoint);
+            await UniTask.WaitUntil(() => isInitialized == true);
+            return line;
         }
 
         [ContextMenu("Get Tilemap Colliders")]
@@ -74,5 +80,12 @@ namespace HAVIO
             
             SortListByPositionX();
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            line.DrawGizmos();
+        }
+#endif
     }
 }

@@ -1,43 +1,44 @@
-using System;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace HAVIO
 {
-    [Serializable]
+    [System.Serializable]
     public class EnemyData
     {
-        [Header("=== Components ===")]
+        [Header("=== Serializable Values")]
+        public float MoveSpeed = 1f;
+
+        [Space(10)]
+        public float SearchRange = 10f;
+        public float AttackRange = 5f;
+
+#if UNITY_EDITOR
+        public bool IsShowLog = false;
+#endif
+
+        [Header("=== Serializable References")]
+        public EnemyJoint Joint;
         public TilemapSection Section;
 
         [Space(10)]
         public Transform EyeTransform;
-        public SpriteRenderer[] TrackableJointRenderers;
-      
-        [Header("=== Values ===")]
-        public float MoveSpeed = 2f;
 
-        // Battles
-        public float FindPlayerDistance = 10f;
-        public float AttackPlayerDistance = 5f;
-
-#if UNITY_EDITOR
-        [Space(10)]
-        public bool IsShowLog = true;
-#endif
-
-        // NonSerialized
+        // Non-Serializable References
         public Enemy Enemy { get; set; }
-        public Transform Transform { get; set; }
-        public EnemyAnimationController Animator;
-        public EnemyStateMachine StateMachine;
-      
+        public EnemyStateMachine StateMachine { get; set;}
+        public EnemyAnimator Animator { get; set; }
+        public Damageable Damageable { get; set; }
+        
         public void Initialize(Enemy enemy)
         {
-            this.Enemy = enemy;
-            this.Transform = enemy.transform;
-            this.Animator = new EnemyAnimationController(enemy);
-            this.StateMachine = new EnemyStateMachine(this);
-            this.StateMachine.ChangeState(new PatrolEnemyState());
+            Joint.Initialize(enemy);
+
+            Enemy = enemy;
+            StateMachine = new EnemyStateMachine(this);
+            StateMachine.ChangeState(new PatrolEnemyState());
+            Animator = new EnemyAnimator(enemy);
+            Damageable = enemy.GetComponent<Damageable>();
         }
     }
 }

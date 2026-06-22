@@ -3,12 +3,14 @@ namespace HAVIO
     public class AttackEnemyState : IEnemyState
     {
         private EnemyData _data;
-
+        
         public void Enter(EnemyData data)
         {
             this._data = data;
-        }
 
+            _data.Enemy.StopMove();
+        }
+        
         public void Exit()
         {
             // 상태 종료 처리
@@ -16,13 +18,14 @@ namespace HAVIO
 
         public void Tick()
         {
-            _data.LookAtAll();
+            bool isReverse = _data.Joint.IsFlipToLookAtPlayer();
+            _data.Joint.Flip(isReverse);
+            _data.Joint.LookAtPlayer();
         }
 
         public void SlowTick()
         {
-            _data.DecideStateByDistance();
-            _data.HandleFlip();
+            _data.CheckPlayerDistance();
         }
     }
 }

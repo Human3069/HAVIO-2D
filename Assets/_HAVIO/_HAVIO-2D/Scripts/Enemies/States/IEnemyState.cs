@@ -4,7 +4,7 @@ namespace HAVIO
     {
         void Enter(EnemyData data);
         void Exit();
-        void Tick();
+        void Tick(); // 매 프레임마다 호출
         void SlowTick(); // 0.5초마다 호출
     }
 }

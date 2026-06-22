@@ -6,8 +6,10 @@ namespace HAVIO
 {
     public class EnemyStateMachine
     {
+        private const string LOG_FORMAT = "<color=white>[EnemyStateMachine]</color> {0}";
+
         private EnemyData _data;
-        
+
         private IEnemyState currentState;
         private CancellationTokenSource source = null;
         
@@ -18,7 +20,7 @@ namespace HAVIO
         {
             this._data = data;
         }
-
+        
         public IEnemyState GetState()
         {
             return currentState;
@@ -27,26 +29,32 @@ namespace HAVIO
         public void ChangeState(IEnemyState newState)
         {
             IEnemyState oldState = currentState;
+            if (currentState != null && newState != null &&
+                currentState.GetType() == newState.GetType())
+            {
+                return;
+            }
 
 #if UNITY_EDITOR
             if (_data.IsShowLog == true)
             {
                 string oldStateName = oldState == null ? "Null" : oldState.GetType().Name;
                 string newStateName = newState == null ? "Null" : newState.GetType().Name;
-                
+
                 oldStateName = oldStateName.Replace("EnemyState", "");
                 newStateName = newStateName.Replace("EnemyState", "");
 
-                Debug.LogFormat("<color=yellow>" + oldStateName + " => " + newStateName + "</color>");
+                Debug.LogFormat(LOG_FORMAT, "<color=yellow>" + oldStateName + " => " + newStateName + "</color>");
             }
 #endif
+
+            source?.Cancel();
+            source = new CancellationTokenSource();
 
             currentState?.Exit();
             currentState = newState;
             currentState?.Enter(_data);
             
-            source?.Cancel();
-            source = new CancellationTokenSource();
             if (newState != null)
             {
                 TickProvider(source.Token).Forget();
@@ -59,17 +67,17 @@ namespace HAVIO
             
             OnStateChangedEvent?.Invoke(oldState, newState);
         }
-
-        private async UniTask TickProvider(CancellationToken token)
+        
+        private async UniTaskVoid TickProvider(CancellationToken token)
         {
             while (token.IsCancellationRequested == false)
             {
                 currentState?.Tick();
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+                await UniTask.Yield(token);
             }
         }
 
-        private async UniTask SlowTickProvider(CancellationToken token)
+        private async UniTaskVoid SlowTickProvider(CancellationToken token)
         {
             while (token.IsCancellationRequested == false)
             {
@@ -82,14 +90,14 @@ namespace HAVIO
         {
             if (currentState == null)
             {
-                Debug.LogFormat("No current state.");
+                Debug.LogFormat(LOG_FORMAT, "No current state.");
             }
             else
             {
                 string currentStateName = currentState.GetType().Name;
                 currentStateName = currentStateName.Replace("EnemyState", "");
                 
-                Debug.LogFormat("current : " + currentStateName);
+                Debug.LogFormat(LOG_FORMAT, "current : " + currentStateName);
             }
         }
     }
