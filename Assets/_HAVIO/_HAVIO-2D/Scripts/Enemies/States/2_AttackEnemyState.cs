@@ -18,9 +18,17 @@ namespace HAVIO
 
         public void Tick()
         {
-            bool isReverse = _data.Joint.IsFlipToLookAtPlayer();
-            _data.Joint.Flip(isReverse);
-            _data.Joint.LookAtPlayer();
+            bool? isReverse = _data.Joint.IsFlipToLookAtPlayer();
+            if (isReverse != null)
+            {
+                _data.Joint.Flip(isReverse.Value);
+                _data.Joint.LookAtPlayer();
+            }
+
+            if (_data.Enemy.IsMoving == true)
+            {
+                _data.Enemy.StopMove();
+            }
         }
 
         public void SlowTick()

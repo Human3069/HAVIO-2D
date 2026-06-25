@@ -26,18 +26,29 @@ namespace HAVIO
             Vector3 eyePos = _enemy.Data.EyeTransform.position;
             Vector3 playerDirection = (playerPos - eyePos).normalized;
 
+            float angle = Vector3.Angle(Vector3.up, playerDirection);
             foreach (SpriteRenderer renderer in spriteRenderers)
             {
                 renderer.transform.right = -playerDirection;
             }
         }
 
-        public bool IsFlipToLookAtPlayer()
+        // true => Flip
+        // false => No Flip
+        // null => unhandled
+        public bool? IsFlipToLookAtPlayer()
         {
             Vector3 playerPos = HelicopterController.Instance.transform.position;
             float xDiff = playerPos.x - _enemy.Data.EyeTransform.position.x;
 
-            return xDiff >= 0;
+            if (xDiff > -0.5f && xDiff < 0.5f)
+            {
+                return null;
+            }
+            else
+            {
+                return xDiff >= 0;
+            } 
         }
 
         public bool IsFlipToMoving(Vector3 targetPosition)
@@ -57,6 +68,11 @@ namespace HAVIO
             else
             {
                 _enemy.transform.eulerAngles = new Vector3(0f, 0f, 0f);
+            }
+
+            foreach (SpriteRenderer renderer in spriteRenderers)
+            {
+                renderer.flipY = false;
             }
         }
 

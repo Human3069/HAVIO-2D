@@ -47,13 +47,13 @@ namespace HAVIO
             if (_data.Enemy.IsArrived(_line.Left) == true)
             {
                 bool isReverse = _data.Joint.IsFlipToMoving(_line.Right);
-                _data.Joint.Flip(isReverse);
+                _data.Joint.FlipToMove(isReverse);
                 _data.Enemy.Move(_line.Right);
             }
             else if (_data.Enemy.IsArrived(_line.Right) == true)
             {
                 bool isReverse = _data.Joint.IsFlipToMoving(_line.Left);
-                _data.Joint.Flip(isReverse);
+                _data.Joint.FlipToMove(isReverse);
                 _data.Enemy.Move(_line.Left);
             }
         }

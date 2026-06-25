@@ -8,6 +8,19 @@ namespace HAVIO
     {
         public EnemyData Data;
 
+        private bool _isMoving;
+        public bool IsMoving
+        {
+            get
+            {
+                return _isMoving;
+            }
+            private set
+            {
+                _isMoving = value;
+            }
+        }
+
         private CancellationTokenSource source;
 
         private void Awake()
@@ -23,6 +36,9 @@ namespace HAVIO
 
         public void Move(Vector3 targetPosition)
         {
+            Debug.Log("Move");
+
+            IsMoving = true;
             source?.Cancel();
             source = new CancellationTokenSource();
             
@@ -46,11 +62,16 @@ namespace HAVIO
             }
 
             this.transform.position = targetPosition;
+
             Data.Animator.PlayMove(false);
+            IsMoving = false;
         }
 
         public void StopMove()
         {
+            Debug.Log("Stop Move");
+
+            IsMoving = false;
             source?.Cancel();
             source = new CancellationTokenSource();
 
